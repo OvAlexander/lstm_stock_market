@@ -105,3 +105,10 @@ if __name__ == '__main__':
         std_avg_x.append(date)
     print('MSE error for standard averaging: %.5f'%(0.5*np.mean(mse_errors)))
 
+    # Ploting
+    plt.figure(figsize=(18, 9))
+    plt.plot(range(df.shape[0]), all_mid_data, color='b', label='True') # Plots the average (Mid Price)
+    plt.plot(range(window_size, N), std_avg_predicitons, color='orange', label='Prediction') # Plots the MSE
+    plt.xlabel('Date')
+    plt.ylabel('Mid Price')
+    plt.show()
