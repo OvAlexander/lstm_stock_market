@@ -44,11 +44,46 @@ if __name__ == '__main__':
         df = pd.read_csv(os.path.join('archive','Stocks', 'hpq.us.txt'), delimiter=',', usecols=['Date','Open','High','Low','Close']) # Looks at HPQ or HP Inc
         print('Loaded data from Kaggle repo')
     
+    # Sorting 
     df = df.sort_values('Date')
     df.head()
+
+    # Ploting
     plt.figure(figsize=(18, 9))
     plt.plot(range(df.shape[0]), (df['Low']+df['High']/2.0)) # Plots the average (Mid Price)
     plt.xticks(range(0,df.shape[0],500), df['Date'].loc[::500], rotation=45)
     plt.xlabel('Date')
     plt.ylabel('Mid Price')
     plt.show()
+
+    # Data subset creation
+    high_prices = df.loc[:, 'High'].to_numpy()
+    low_prices = df.loc[:, 'Low'].to_numpy()
+    mid_prices = (high_prices+low_prices)/2.0
+
+    train_data = mid_prices[:11000]
+    test_data = mid_prices[11000:]
+
+    # Normalization
+    scaler = MinMaxScaler()
+    train_data = train_data.reshape(-1, 1)
+    test_data = test_data.reshape(-1, 1)
+
+    smoothing_window_size = 2500
+    for di in range(0, 10000, smoothing_window_size):
+        scaler.fit(train_data[di:di+smoothing_window_size,:])
+        train_data[di:di+smoothing_window_size,:] = scaler.transform(train_data[di:di+smoothing_window_size,:])
+
+    scaler.fit(train_data[di+smoothing_window_size:,:])
+    train_data[di+smoothing_window_size:,:] = scaler.transform(train_data[di+smoothing_window_size:,:])
+
+    train_data = train_data.reshape(-1)
+    test_data = scaler.transform(test_data).reshape(-1)
+
+    EMA = 0.0
+    gamma = 0.1
+    for ti in range(11000):
+        EMA = gamma*train_data[ti] + (1-gamma)*EMA
+        train_data[ti] = EMA
+    
+    all_mid_data = np.concatenate([train_data, test_data],axis=0)
