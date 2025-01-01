@@ -112,3 +112,28 @@ if __name__ == '__main__':
     plt.xlabel('Date')
     plt.ylabel('Mid Price')
     plt.show()
+
+    # EMA
+    run_avg_predictions = []
+    run_avg_x = []
+    mse_errors = []
+    running_mean = 0.0
+    run_avg_predictions.append(running_mean)
+    decay = 0.5
+
+    for pred_idx in range(1, N):
+        running_mean = running_mean*decay + (1.0-decay)*train_data[pred_idx-1]
+        run_avg_predictions.append(running_mean)
+        mse_errors.append((run_avg_predictions[-1]-train_data[pred_idx])**2)
+        run_avg_x.append(date)
+    
+    ema_mse_error = 0.5*np.mean(mse_errors)
+    print(f'MSE Error for EMA Averaging: {ema_mse_error}')
+
+    # Ploting
+    plt.figure(figsize=(18, 9))
+    plt.plot(range(df.shape[0]), all_mid_data, color='b', label='True') # Plots the average (Mid Price)
+    plt.plot(range(0, N), run_avg_predictions, color='orange', label='Prediction') # Plots the MSE
+    plt.xlabel('Date')
+    plt.ylabel('Mid Price')
+    plt.show()
